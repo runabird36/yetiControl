@@ -1,0 +1,107 @@
+
+
+/*
+global proc string[] listAttr( string $tar_yeti_node, string $tar_node ){
+
+    string $attr_list[] = {};
+    $attr_list = `pgYetiGraph -node $tar_node -listParams $tar_yeti_node`;
+    return $attr_list;
+
+}*/
+
+
+
+
+
+global proc string[] list_node_of_type( string $yeti_node, string $inner_node_type){
+
+    string $all_node[] = `pgYetiGraph -listNodes -type $inner_node_type $yeti_node`;
+    return $all_node;
+}
+
+
+
+
+global proc updateSetName( string $y_node, string $from_set, string $to_set){
+
+    string $check_node;
+    string $check_value = "";
+    string $search_tar_nodes[] = list_node_of_type($y_node, "import");
+    print($search_tar_nodes);
+    for($check_node in $search_tar_nodes)
+    {
+
+        $check_value = `pgYetiGraph -node $check_node -param "geometry" -getParamValue $y_node`;
+        //print($check_value);
+        //print("\n");
+
+        if($check_value == $from_set)
+        {
+
+            if( catch(`pgYetiGraph -node $check_node -param "geometry" -setParamValueString $to_set $y_node`) )
+            {
+                //print("Error : Set inner node value in yeti node!");
+
+            }
+            break;
+
+        }
+
+    }
+
+}
+
+
+
+
+
+
+// Create a new Yeti node with renaming and without add basemesh
+global proc string create_yeti_without_addmesh_v02(string $y_node_name)
+{
+		string $newPgYetiMaya = pgYetiCreate();
+    if ($y_node_name != ""){
+        string $_y_parent_list[] = `listRelatives -p $newPgYetiMaya`;
+        string $_yeti_geo_name = $_y_parent_list[0];
+        string $result_name = `rename $_yeti_geo_name $y_node_name`;
+
+        return $result_name;
+    }
+    else{
+      return $newPgYetiMaya;
+    }
+
+}
+
+
+
+
+
+
+global proc string import_groomFile_from_yNode_v03( string $in_groom, string $tar_mesh, string $yetiNode)
+{
+    string $newPgYetiGroom = `createNode pgYetiGroom`;
+
+    connectAttr ( $tar_mesh + ".worldMesh[0]" ) ( $newPgYetiGroom + ".inputGeometry" );
+    connectAttr time1.outTime ( $newPgYetiGroom + ".currentTime" );
+
+    string $groom = $in_groom;
+  	string $shapeTest = substring( $groom, size($groom) - 4, size($groom));
+  	if ( $shapeTest == "Shape" )
+  	{
+  		$groom = substring( $groom, 1, size($groom) - 5);
+  	}
+
+  	// rename the parent and node
+  	string $transforms[] = `listRelatives -p $newPgYetiGroom`;
+  	rename $newPgYetiGroom "tempPgYetiGroomName";
+  	string $transform_name = `rename $transforms[0] ( $groom )`;
+  	$newPgYetiGroom = `rename "tempPgYetiGroomName" ( $transform_name + "Shape" )`;
+
+  	pgYetiCommand -setStrands $yetiNode $in_groom $newPgYetiGroom;
+
+  	pgYetiAddGroom( $newPgYetiGroom, $yetiNode );
+
+  	return $newPgYetiGroom;
+
+}

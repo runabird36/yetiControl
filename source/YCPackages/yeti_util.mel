@@ -1,0 +1,116 @@
+
+
+global proc string get_import_node(){
+
+    string $import_node_list[];
+    string $node_list[] = `pgYetiGraph -listNodes`;
+
+    for ($_node in $node_list)
+    {
+        string $node_type = `pgYetiGraph -node $_node -nodeType`;
+        if($node_type =="import")
+        {
+            string $input_param = `pgYetiGraph -node $_node -param "type" -getParamValue`;
+            if ($input_param == "0")
+            {
+                return $_node;
+            }
+        }
+
+    }
+    return "";
+}
+
+
+
+global proc set_input_geo(string $_tar_node, string $imported_geo, string $_to_shape)
+{
+
+    if($imported_geo != $_to_shape)
+    {
+        int $resutl = catch(`pgYetiGraph -node $_tar_node -param "geometry" -setParamValueString $_to_shape`);
+        print $resutl;
+        if ( $resutl == 1)
+        {
+            print("Is not matched object");
+            pgYetiGraph -node $_tar_node -param "geometry" -setParamValueString $imported_geo;
+        }
+
+    }
+
+}
+
+
+
+
+
+global proc G_pgYetiExportGroomFromSelected(string $_pub_path)
+{
+	string $selectedYetiNodes[] = `ls -sl -dag -noIntermediate -type pgYetiMaya`;
+	if ( size( $selectedYetiNodes ) == 0 )
+	{
+		error "No Yeti Nodes Selected!";
+	} else
+  {
+		if (0 < `size($_pub_path)`)
+		{
+			pgYetiCommand -exportGroom $_pub_path $selectedYetiNodes[0];
+		}
+	}
+}
+
+
+global proc string[] get_mask_path_list(string $yeti_node_name)
+{
+    string $tex_node_list[]= `pgYetiGraph -listNodes -type "texture" $yeti_node_name`;
+
+
+    string $path_list[];
+    int $cnt = 0;
+    for($tex_node in $tex_node_list)
+    {
+        string $tex_path = `pgYetiGraph -node $tex_node -param "file_name" -getParamValue`;
+
+        $path_list[$cnt] = $tex_path;
+        $cnt += 1;
+
+
+
+
+
+    };
+    return $path_list;
+
+
+}
+
+
+
+
+
+
+global proc string[] get_mask_path_list(string $yeti_node_name)
+{
+    string $tex_node_list[]= `pgYetiGraph -listNodes -type "texture" $yeti_node_name`;
+
+
+    string $path_list[];
+    int $cnt = 0;
+    for($tex_node in $tex_node_list)
+    {
+        string $tex_path = `pgYetiGraph -node $tex_node -param "file_name" -getParamValue $yeti_node_name`;
+
+        $path_list[$cnt] = $tex_node;
+        $cnt += 1;
+        $path_list[$cnt] = $tex_path;
+        $cnt += 1;
+
+
+    };
+
+
+
+    return $path_list;
+
+
+}

@@ -5,95 +5,19 @@ import maya.mel as mel
 
 import os, pprint, time, json, re, sys
 
-from general_md_3x import LUCY
-from maya_md import (neon, yt_py)
+
+from source.YCPackages import (neon, yt_py)
 
 
-from yetiControl.source.YC_core_module import (__PUB_PATH_TEMPLATE__,
-                                                get_assetname,
-                                                get_pub_paths)
-
-
-
+from source.YC_core_module import (__PUB_PATH_TEMPLATE__,
+                                    get_assetname,
+                                    get_pub_paths)
 
 
 
 
-def remove_shape_postfix(tar_list):
-    shape_re_ex = re.compile('Shape$|Shape\w+$')
-    for _idx, _node in enumerate(tar_list):
-        if shape_re_ex.search(_node):
-            print('before : {0}'.format(_node))
-            tar_list[_idx] = shape_re_ex.sub('', tar_list[_idx])
-            print('after : {0}'.format(tar_list[_idx]))
-            print('================')
-
-def get_set_list(yeti_list :list) -> list:
-    set_list = []
-    for cur_yeti in yeti_list:
-        connected_nodes = cmds.listConnections(cur_yeti, d=False, s=True, sh=True)
-        for node in connected_nodes:
-            if cmds.nodeType(node) == "objectSet":
-                set_list.append({"YETI":cur_yeti, "SET":node})
-    return set_list
-        
 
 
-
-def check_setname_and_fix() -> None:
-    all_yetiND_list     = cmds.ls(type='pgYetiMaya')
-    all_set_list        = get_set_list(all_yetiND_list)
-    for set_yeti_pair in all_set_list:
-        cur_yeti  = set_yeti_pair["YETI"]
-        _set_node = set_yeti_pair["SET"]
-        if re.search(r"set\_\d{3}$", _set_node):
-            to_set_name = re.sub(r"set\_\d{3}$", "set", _set_node)
-            to_set_name = cmds.rename(_set_node, to_set_name)
-            yt_py.update_set_name(cur_yeti, _set_node, to_set_name)
-
-
-
-def check_yeti_components_name_convention() -> list:
-
-    prefix_error_list   = []
-    postfix_error_list  = []
-
-    asset_name = get_assetname()
-    if asset_name == "":
-        return ["There is no selected asset"]
-
-    all_yetiND_list     = cmds.ls(type='pgYetiMaya')
-    all_groomND_list    = cmds.ls(type='pgYetiGroom')
-    whole_list = all_yetiND_list + all_groomND_list
-    
-    remove_shape_postfix(all_yetiND_list)
-    remove_shape_postfix(all_groomND_list)
-
-
-    for _node in all_yetiND_list+all_groomND_list:
-        prefix_name = _node.split('_')[0]
-        if prefix_name != asset_name:
-            prefix_error_list.append(_node)
-
-
-    
-    for _y_node in all_yetiND_list:
-        if re.search(r"YETI\_\d{3}$", _y_node):
-            to_yeti_name = re.sub(r"YETI\_\d{3}$", "YETI", _y_node)
-            _y_node = cmds.rename(_y_node, to_yeti_name)
-        postfix_name = _y_node.split('_')[-1]
-        if postfix_name != 'YETI':
-            postfix_error_list.append(_y_node)
-            
-
-
-    for _g_node in all_groomND_list:
-        postfix_name = _g_node.split('_')[-1]
-        if postfix_name != 'GRM':
-            postfix_error_list.append(_g_node)
-
-    
-    return prefix_error_list + postfix_error_list
 
 
 
@@ -109,23 +33,19 @@ class CFXExporter():
 
     pub_paths = []
 
-    def __init__(self,p_dialog):
-        
-        self.progress_dialog = p_dialog
+    def __init__(self):
+        YCPackages_dir_path = os.environ['HGWEAVER_YETI_ROOT'] + "/" + "source" + "/" + "YCPackages"
+        YCPackages_dir_path = YCPackages_dir_path.replace("\\", "/")
         self.grp_re_ex = re.compile('GRP$|GRP\d+$')
         self.geo_re_ex = re.compile('GEO$|GEO\d+$')
         self.geoshape_re_ex = re.compile('GEOShape$|GEOShape\d+$')
-        if sys.platform.count("win"):
-            mel.eval('source "Z:/backstage/maya/milki/toolkits/yeti_util.mel"')
-        else:
-            mel.eval("source \"/usersetup/linux/scripts/maya_sc/milki/toolkits/yeti_util.mel\"")
-
+        
+        mel.eval('source \"{0}/yeti_util.mel\"'.format(YCPackages_dir_path))
+        
         self.mesh_attr_list = ['.yetiSubdivision', '.yetiSubdivisionIterations']
         self.grm_attr_list = ['.partRandomness', '.automaticParting', '.automaticPartingAngleThreshold', '.automaticPartingReferencePosition']
         self.set_attr_list = ['.mng']
         self.curves_attr_list = ['.baseAttraction', '.tipAttraction', '.innerRadius', '.outerRadius', '.guideModel', '.attractionProfile[0].attractionProfile_FloatValue', '.attractionProfile[0].attractionProfile_Position', '.attractionProfile[1].attractionProfile_FloatValue', '.attractionProfile[1].attractionProfile_Position']
-
-
 
     def get_attr_info_fromNode(self, _node_type, _tar_node):
         '''
@@ -162,25 +82,19 @@ class CFXExporter():
                     check_attr_fullname = one_curve_shape + _check_attr
                 else:
                     check_attr_fullname = _tar_node+_check_attr
+                if cmds.objExists(check_attr_fullname) == False:
+                    continue
                 _tar_value = cmds.getAttr(check_attr_fullname)
 
                 self.pub_attr_dict[_node_type].append({'ATTR_FULLNAME':_tar_node+_check_attr,'ATTR_VALUE':_tar_value})
             except Exception as e:
                 print(str(e))
 
-
-
-
-
     def get_curv_grps_from_curvSet(self, set_name):
         crv_grps_list = []
         hair_curve_list = cmds.sets(set_name, q=True)
         crv_grps_list = list(set(cmds.listRelatives(hair_curve_list, p=True)))
         return crv_grps_list
-
-
-
-
 
     def get_linked_material(self, yeti_node):
         ''' Get assigned material to yeti node : string '''
@@ -201,7 +115,6 @@ class CFXExporter():
                         break
                 break
         return 'lambert1'
-
 
     def create_shape_info(self, tar_shape):
         ''' Create texture reference from selected shape '''
@@ -226,8 +139,6 @@ class CFXExporter():
 
         return {'EACH_shape':_tar_GEOShape, 'EACH_texRef':tex_ref_obj}
 
-
-
     def rename_and_updateYTGraph(self, from_shape, to_shape, yeti_node):
         ''' If target shape name is changed because of bind skin ( ShapeDeformed postfix ) '''
         ''' Rename shape '''
@@ -250,12 +161,10 @@ class CFXExporter():
         mel.eval('string $_to_shape = \"{0}\"'.format(to_shape))
         mel.eval('set_input_geo($_import_node, $_import_geo_name, $_to_shape)')
 
-
     def dirpath_check_makedirs(self, full_path):
         dir_path = os.path.dirname(full_path)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
-
 
     def export_groom_from_selectedY(self, _yeti_node, _grm_pub_path):
         ''' Use custom exporting mel function ( toolkits/yeti_util.mel ) '''
@@ -263,8 +172,6 @@ class CFXExporter():
         cmds.select(_yeti_node)
         mel_cmd = 'G_pgYetiExportGroomFromSelected(\"{0}\");'.format(_grm_pub_path)
         mel.eval(mel_cmd)
-
-
 
     def check_and_get_yVariables(self, _y_node):
         var_info_dict = {"YETI_F_VAR":[], "YETI_VEC_VAR":[]}
@@ -304,12 +211,13 @@ class CFXExporter():
 
         return var_info_dict
 
-    def pre_execute(self, targets :str, selected_dirpath :str) -> None:
+    def pre_execute(self, targets :str, variant_name :str="default", vernum :str="v001", selected_dirpath :str="") -> list:
         
         self.target = targets
         cmds.select(self.target)
         self.export_json_info = {}
         cur_assetname = get_assetname()
+        self.cur_vernum = vernum
         # Rule !!
         #    1. Query information and Export ,based on Yeti Node
         #    2. When Load, get target shape list for creating yeti node. and, load grm file in that yeti node
@@ -397,14 +305,14 @@ class CFXExporter():
         #       - one json file
         self.ma_pub_path_list   = [get_pub_paths(selected_dirpath, cur_assetname,'mb')]
         self.json_pub_path_list = [get_pub_paths(selected_dirpath, cur_assetname, 'json')]
-        self.grm_pub_path_list  = [get_pub_paths(selected_dirpath, cur_assetname, 'grm')]
-        grm_dir_path = os.path.dirname(self.grm_pub_path_list[0])
-        cur_ver_num = LUCY.get_dev_vernum()
+        grm_pub_fullpath        = get_pub_paths(selected_dirpath, cur_assetname, 'grm')
+        grm_dir_path            = os.path.dirname(grm_pub_fullpath)
+        
 
 
         self.dirpath_check_makedirs(self.ma_pub_path_list[0])
         self.dirpath_check_makedirs(self.json_pub_path_list[0])
-        self.dirpath_check_makedirs(self.grm_pub_path_list[0])
+        self.dirpath_check_makedirs(grm_pub_fullpath)
 
 
         self.export_json_info['MA_DATA'] = self.ma_pub_path_list
@@ -421,10 +329,10 @@ class CFXExporter():
             if _y_node in ['MA_DATA', 'JSON_DATA', 'MDL_PUB_VER', 'MDL_DEV_VER']:
                 continue
             grm_pub_path = '{0}/pub_{1}.grm'.format(grm_dir_path, _y_node)
-            grm_pub_ver_path = '{0}/pub_{1}_{2}.grm'.format(grm_dir_path, _y_node, cur_ver_num)
+            grm_pub_ver_path = '{0}/pub_{1}_{2}.grm'.format(grm_dir_path, _y_node, vernum)
 
             self.export_json_info[_y_node]['GRM_DATA'] = [grm_pub_path, grm_pub_ver_path]
-            total_pub_grmpath_list.extend([grm_pub_path, grm_pub_ver_path])
+            total_pub_grmpath_list.extend([grm_pub_ver_path])
 
 
         
@@ -434,25 +342,13 @@ class CFXExporter():
         self.ma_pub_path_list.append(_basemesh_ma_path)
 
 
-        all_path = self.ma_pub_path_list + total_pub_grmpath_list
-        self.add_pub_files(all_path)
-
-
-
-
-
-
-
-
-
+        return self.ma_pub_path_list + total_pub_grmpath_list
+        
+        # self.add_pub_files(all_path)
 
     def execute(self):
-        self.check_pub_condition()
+        # self.check_pub_condition()
         cmds.select(self.target)
-
-
-
-
 
 
         # select
@@ -537,9 +433,9 @@ class CFXExporter():
 
 
         pub_targets = [m_pub_path]
-        cur_scene_ver = LUCY.get_dev_vernum()
-        self.pub_to_sg(pub_targets, cur_dev_ver=cur_scene_ver)
-        self.finish(m_pub_path)
+        
+        # self.pub_to_sg(pub_targets, cur_dev_ver=self.cur_vernum)
+        # self.finish(m_pub_path)
 
 
 
