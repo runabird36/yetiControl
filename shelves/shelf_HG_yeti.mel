@@ -63,13 +63,13 @@ global proc shelf_HG_yeti () {
         -font "plainLabelFont" 
         -imageOverlayLabel "MilkiTemp" 
         -overlayLabelColor 0.8 0.8 0.8 
-        -overlayLabelBackColor 0 0 0 0.6 
+        -overlayLabelBackColor 0 0 0 0.5 
         -image "pythonFamily.png" 
         -image1 "pythonFamily.png" 
         -style "iconOnly" 
         -marginWidth 0
         -marginHeight 1
-        -command "import os, sys\nfrom importlib import reload\nyeti_root_path = os.path.realpath(os.environ[\"HGWEAVER_YETI_ROOT\"])\nyeti_root_path = yeti_root_path.replace(\"\\\\\", \"/\")\n\nif yeti_root_path not in sys.path:\n    sys.path.append(yeti_root_path)\n\n\nfrom source.milki.toolkit import YC_exporter\nreload(YC_exporter)\n\nexport_engine = YC_exporter.CFXExporter()\n\nimport traceback\ntry:\n    cmds.select(cl=True)\n    cmds.select(\"ball_GRP\")\n    tar = cmds.ls(sl=True)[0]\n    _path = \"C:/Users/runab/Documents/pipeTest/data/resource/YC_milki_test\"\n    export_engine.pre_execute(tar, \"default\", \"v001\", _path)\n    export_engine.execute()\nexcept:\n    traceback.print_exc()\n\n" 
+        -command "import os, sys\nfrom importlib import reload\nyeti_root_path = os.path.realpath(os.environ[\"HGWEAVER_YETI_ROOT\"])\nyeti_root_path = yeti_root_path.replace(\"\\\\\", \"/\")\n\nif yeti_root_path not in sys.path:\n    sys.path.append(yeti_root_path)\n    \n\nimport source.YC_core_module as YC_core_module\nreload(YC_core_module)\n\nfrom source.milki import YC_milki_engine\nreload(YC_milki_engine)\n\n\nYC_milki_engine = YC_milki_engine.YCMilkiController()\nYC_milki_engine.run()\n\n\n" 
         -sourceType "python" 
         -commandRepeatable 1
         -flat 1
