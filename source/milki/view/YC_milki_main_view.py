@@ -167,12 +167,23 @@ class Ui_YC_main_view(QtCore.QObject):
         self.YC_pub_btn_list_hl.setObjectName("YC_pub_btn_list_hl")
         # spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         # self.YC_pub_btn_list_hl.addItem(spacerItem3)
+        self.YC_pub_update_btn = QtGui.QPushButton(self.YC_asset_info_container_wg)
+        self.YC_pub_update_btn.setObjectName("YC_pub_update_btn")
+        self.YC_pub_update_btn.setFixedWidth(80)
+        self.YC_pub_btn_list_hl.addWidget(self.YC_pub_update_btn)
         self.YC_publish_btn = QtGui.QPushButton(self.YC_asset_info_container_wg)
         self.YC_publish_btn.setObjectName("YC_publish_btn")
+        self.YC_publish_btn.setFixedWidth(80)
         self.YC_pub_btn_list_hl.addWidget(self.YC_publish_btn)
         self.YC_pub_cancel_btn = QtGui.QPushButton(self.YC_asset_info_container_wg)
         self.YC_pub_cancel_btn.setObjectName("YC_pub_cancel_btn")
+        self.YC_pub_cancel_btn.setFixedWidth(65)
+        self.YC_pub_cancel_btn.setStyleSheet("QPushButton{"+\
+                                                "padding-left:4 px;"+\
+                                                "padding-right:4px;"+\
+                                                "}")
         self.YC_pub_btn_list_hl.addWidget(self.YC_pub_cancel_btn)
+        
         self.verticalLayout.addLayout(self.YC_pub_btn_list_hl)
         self.verticalLayout.setStretch(0, 1)
         self.verticalLayout.setStretch(1, 3)
@@ -299,6 +310,7 @@ class Ui_YC_main_view(QtCore.QObject):
         self.YC_publish_btn.setText(_translate("YC_main_view", "Publish"))
         self.YC_pub_cancel_btn.setText(_translate("YC_main_view", "Close"))
         self.YC_check_log_title_lb.setText(_translate("YC_main_view", "Check log"))
+        self.YC_pub_update_btn.setText("Update")
 
     def set_current_check_item(self, cur_item :str) -> None:
         self.cur_check_item = cur_item
@@ -335,7 +347,7 @@ class Ui_YC_main_view(QtCore.QObject):
             self.total_anim.start()
         elif self._ANIM_STATUS_ == True and (self.current_check_item() != input_check_title):
             self.set_current_check_item(input_check_title)
-            print(111111)
+            
         elif self._ANIM_STATUS_ == True:
             self._ANIM_STATUS_ = False
             self.total_anim.setDirection(QtCore.QAbstractAnimation.Backward)
@@ -352,6 +364,12 @@ class Ui_YC_main_view(QtCore.QObject):
             for _log in check_log:
                 _log_item = QtGui.QListWidgetItem(error_prefix+_log)
                 _log_item.setWhatsThis(_log)
+                self.YC_check_log_contents_lw.addItem(_log_item)
+        elif check_title == "Texture":
+            error_prefix = "\'s path does not exists"
+            for _log in check_log:
+                _log_item = QtGui.QListWidgetItem(_log[-1] + error_prefix)
+                _log_item.setWhatsThis(_log[0])
                 self.YC_check_log_contents_lw.addItem(_log_item)
 
     def set_assetname(self, input_name :str) -> None:
@@ -380,6 +398,12 @@ class Ui_YC_main_view(QtCore.QObject):
 
     def get_pub_dirname(self) -> str:
         return self.YC_pub_path_contents_le.text().replace('\\', '/')
+
+    def get_thumbpath(self) -> str:
+        return self.YC_thumb_info_lb.get_thumb_path()
+
+    def get_desc(self) -> str:
+        return self.YC_pub_desc_contents_te.toPlainText()
 
     def set_pub_path(self, input_dir :str) -> None:
         self.YC_pub_path_contents_le.setText(input_dir)

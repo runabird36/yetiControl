@@ -59,31 +59,31 @@ class custom_pubitems_widget(QtGui.QWidget):
         self.file_format_icon_label = QtGui.QLabel(Form)
         self.file_format_icon_label.setText(_fromUtf8(""))
         self.file_format_icon_label.setObjectName(_fromUtf8("file_format_icon_label"))
-        self.file_format_icon_label.setStyleSheet("QLabel{"+\
-                                         "padding-left: 5px;"+\
-                                         "}")
+        # self.file_format_icon_label.setStyleSheet("QLabel{"+\
+        #                                  "padding-left: 5px;"+\
+        #                                  "}")
         self.horizontalLayout.addWidget(self.file_format_icon_label)
         self.file_name_label = QtGui.QLabel(Form)
         self.file_name_label.setText(_fromUtf8(""))
         self.file_name_label.setObjectName(_fromUtf8("file_name_label"))
-        self.file_name_label.setStyleSheet("QLabel{"+\
-                                         "padding: 0px 0px 0px 5px;"+\
-                                         "}")
+        # self.file_name_label.setStyleSheet("QLabel{"+\
+        #                                  "padding: 0px 0px 0px 5px;"+\
+        #                                  "}")
         self.textQVBoxLayout.addWidget(self.file_name_label)
         self.file_format_label = QtGui.QLabel(Form)
         self.file_format_label.setText(_fromUtf8(""))
         self.file_format_label.setObjectName(_fromUtf8("file_name_label"))
-        self.file_format_label.setStyleSheet("QLabel{"+\
-                                         "padding: 0px 0px 0px 6px;"+\
-                                         "}")#top, right, bottom, left
+        # self.file_format_label.setStyleSheet("QLabel{"+\
+        #                                  "padding: 0px 0px 0px 6px;"+\
+        #                                  "}")#top, right, bottom, left
         self.textQVBoxLayout.addWidget(self.file_format_label)
         self.horizontalLayout.addLayout(self.textQVBoxLayout)
         self.ischecked_icon_label = QtGui.QLabel(Form)
         self.ischecked_icon_label.setText(_fromUtf8(""))
         self.ischecked_icon_label.setObjectName(_fromUtf8("ischecked_icon_label"))
-        self.ischecked_icon_label.setStyleSheet("QLabel{"+\
-                                         "padding-right: 35px;"+\
-                                         "}")
+        # self.ischecked_icon_label.setStyleSheet("QLabel{"+\
+        #                                  "padding-right: 35px;"+\
+        #                                  "}")
         self.horizontalLayout.addWidget(self.ischecked_icon_label)
         self.horizontalLayout.setStretch(0, 1)
         self.horizontalLayout.setStretch(1, 9)

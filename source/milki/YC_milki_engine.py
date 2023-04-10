@@ -7,14 +7,32 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtGui
 import maya.cmds as cmds
 from functools import partial
+import yaml
+from source.YCPackages.hgweaverQT import core
 from source.YCPackages.qt_material import apply_stylesheet
 from source.milki.view import YC_milki_main_view
 from source.milki.toolkit import (YC_checker, YC_exporter)
 from source.YC_core_module import (__CUR_THEME__, __HGWEAVER_YETI_ROOT__, get_workspace_dir)
 reload(YC_milki_main_view)
+reload(YC_checker)
 reload(YC_exporter)
 
+def load_yaml_file(yaml_path):
+        try:
+            with open(yaml_path) as f:
+                load_yml = yaml.safe_load(f)
+            return load_yml
+        except Exception as e:
+            print(str(e))
+            return
 
+def dump_to_yaml(info, yaml_path):
+    try:
+        with open(yaml_path, "w") as f:
+            yaml.dump(info, f)
+    except Exception as e:
+        print(str(e))
+    return
 
 def _maya_main_window():
    '''
@@ -52,6 +70,8 @@ class YCMilkiController(QtGui.QMainWindow):
         self._ui.YC_pub_check_contents_lw._CHECK_CONVETION_SIGNAL_.connect(self.check_convention)
         self._ui.YC_check_log_contents_lw.itemClicked.connect(self.select_node)
         self._ui.YC_pub_path_info_set_btn.clicked.connect(self.set_pub_path)
+        self._ui.YC_pub_update_btn.clicked.connect(self.update_pub_info)
+        self._ui.YC_publish_btn.clicked.connect(self.publish_data)
     
     def init_data(self) -> None:
         sel_res = cmds.ls(sl=True)
@@ -68,18 +88,18 @@ class YCMilkiController(QtGui.QMainWindow):
         name_check_log = YC_checker.check_yeti_components_name_convention()
         self._ui.set_log_item_info("Name", name_check_log)
 
+        tex_check_log = YC_checker.check_texture_path_convention()
+        self._ui.set_log_item_info("Texture", tex_check_log)
+
         # set init pub dir
         start_dir = get_workspace_dir()
         self._ui.set_pub_path(start_dir)
 
         # set Exporter pre-execute
         self.cfx_export_engine = YC_exporter.CFXExporter()
-        # export_engine.pre_execute(tar, "default", "v001", _path)
-        pub_items = self.cfx_export_engine.pre_execute(self.cur_target,
-                                                        self._ui.get_variantname(),
-                                                        self._ui.get_vernum(),
-                                                        self._ui.get_pub_dirname())
-        self._ui.set_pub_item_view(pub_items)
+        
+        self.update_pub_info()
+        
 
         return True
     
@@ -110,6 +130,10 @@ class YCMilkiController(QtGui.QMainWindow):
             name_check_log = YC_checker.check_yeti_components_name_convention()
             self._ui.set_log_item_info(check_title, name_check_log)
             self._ui.set_error_view(check_title, name_check_log)
+        if check_title == "Texture":
+            name_check_log = YC_checker.check_texture_path_convention()
+            self._ui.set_log_item_info(check_title, name_check_log)
+            self._ui.set_error_view(check_title, name_check_log)
         
 
     def set_error_view(self, _item :QtGui.QListWidgetItem) -> None:
@@ -134,6 +158,25 @@ class YCMilkiController(QtGui.QMainWindow):
         if dir_path:
             self._ui.set_pub_path(dir_path)
         return
+    
+    def update_pub_info(self) -> None:
+        pub_items = self.cfx_export_engine.pre_execute(self.cur_target,
+                                                        self._ui.get_variantname(),
+                                                        self._ui.get_vernum(),
+                                                        self._ui.get_pub_dirname())
+        self._ui.set_pub_item_view(pub_items)
+
+    def publish_data(self) -> None:
+        thumb_path      = self._ui.get_thumbpath()
+        desc            = self._ui.get_desc()
+        
+        export_info = self.cfx_export_engine.execute(thumb_path, desc)
+        
+        yaml_hub_path   = export_info.get("SEARCH_PATH") + "/" + "{0}_cfx_hub.yaml".format(self.cur_assetname)
+        dump_to_yaml(export_info, yaml_hub_path)
+
+        self.complete_dialog = core.get_confirm_dialog_with_exec(title="Milki", msg="Publish Complete!", btn_list=["Ok"])
+        self.complete_dialog.exec_()
         
     def mousePressEvent(self, event) -> None:
         self.origin_pos = event.pos()

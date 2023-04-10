@@ -151,10 +151,6 @@ class CFXExporter():
         # mel.eval(add_cmd)
 
         mel.eval('select {0}'.format(yeti_node))
-        if sys.platform.count("win"):
-            mel.eval('source "Z:/backstage/maya/milki/toolkits/yeti_util.mel"')
-        else:
-            mel.eval("source '/usersetup/linux/scripts/maya_sc/milki/toolkits/yeti_util.mel'")
         mel.eval('string $_import_node = get_import_node();')
         mel.eval('string $_import_geo_name = `pgYetiGraph -node $_import_node -param "geometry" -getParamValue`;')
         mel.eval('if($_import_geo_name != \"{0}\"){{pgYetiGraph -node $_import_node -param "geometry" -setParamValueString \"{0}\";}}'.format(to_shape))
@@ -216,8 +212,11 @@ class CFXExporter():
         self.target = targets
         cmds.select(self.target)
         self.export_json_info = {}
-        cur_assetname = get_assetname()
+        self.cur_assetname = get_assetname()
         self.cur_vernum = vernum
+        self.variant_name = variant_name
+        self.selected_dirpath = selected_dirpath + "/" + "{0}_{1}".format(self.variant_name, self.cur_vernum)
+        
         # Rule !!
         #    1. Query information and Export ,based on Yeti Node
         #    2. When Load, get target shape list for creating yeti node. and, load grm file in that yeti node
@@ -303,9 +302,9 @@ class CFXExporter():
         #       - one ma file
         #       - one grm file ( multiple groom nodes in one grm file )
         #       - one json file
-        self.ma_pub_path_list   = [get_pub_paths(selected_dirpath, cur_assetname,'mb')]
-        self.json_pub_path_list = [get_pub_paths(selected_dirpath, cur_assetname, 'json')]
-        grm_pub_fullpath        = get_pub_paths(selected_dirpath, cur_assetname, 'grm')
+        self.ma_pub_path_list   = [get_pub_paths(self.selected_dirpath, self.cur_assetname,'mb')]
+        self.json_pub_path_list = [get_pub_paths(self.selected_dirpath, self.cur_assetname, 'json')]
+        grm_pub_fullpath        = get_pub_paths(self.selected_dirpath, self.cur_assetname, 'grm')
         grm_dir_path            = os.path.dirname(grm_pub_fullpath)
         
 
@@ -323,7 +322,8 @@ class CFXExporter():
         self.export_json_info['MDL_PUB_VER'] = pub_ver
         self.export_json_info['MDL_DEV_VER'] = dev_ver
 
-        total_pub_grmpath_list = []
+        self.grm_relpath_list   = []
+        total_pub_grmpath_list  = []
         for _y_node, _info_dict in self.export_json_info.items():
             
             if _y_node in ['MA_DATA', 'JSON_DATA', 'MDL_PUB_VER', 'MDL_DEV_VER']:
@@ -332,7 +332,8 @@ class CFXExporter():
             grm_pub_ver_path = '{0}/pub_{1}_{2}.grm'.format(grm_dir_path, _y_node, vernum)
 
             self.export_json_info[_y_node]['GRM_DATA'] = [grm_pub_path, grm_pub_ver_path]
-            total_pub_grmpath_list.extend([grm_pub_ver_path])
+            total_pub_grmpath_list.extend([grm_pub_path])
+            self.grm_relpath_list.append(os.path.relpath(grm_pub_path, self.selected_dirpath))
 
 
         
@@ -346,7 +347,7 @@ class CFXExporter():
         
         # self.add_pub_files(all_path)
 
-    def execute(self):
+    def execute(self, thumb_path :str, desc :str) -> dict:
         # self.check_pub_condition()
         cmds.select(self.target)
 
@@ -427,15 +428,25 @@ class CFXExporter():
 
 
 
-
-
-
-
-
-        pub_targets = [m_pub_path]
         
-        # self.pub_to_sg(pub_targets, cur_dev_ver=self.cur_vernum)
-        # self.finish(m_pub_path)
+        maya_relpath = os.path.relpath(m_pub_path, self.selected_dirpath)
+        main_json_relpath = os.path.relpath(j_pub_path, self.selected_dirpath)
+        attr_json_relpath = os.path.relpath(attr_json_pub_path, self.selected_dirpath)
+        
+        
+        return {"ASSETNAME"     :self.cur_assetname,
+                "VARIANT"       :self.variant_name,
+                "VERSION"       :self.cur_vernum,
+                "DESC"          :desc,
+                "THUMBNAIL"     :thumb_path,
+                "SEARCH_PATH"   :self.selected_dirpath,
+                "PUBS"          :{
+                                    "MAYA"      : maya_relpath,
+                                    "MAIN_JSON" : main_json_relpath,
+                                    "ATTR_JSON" : attr_json_relpath,
+                                    "GRMS"      : self.grm_relpath_list
+                                }
+                }
 
 
 

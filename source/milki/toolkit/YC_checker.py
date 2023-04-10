@@ -3,7 +3,7 @@ from importlib import reload
 import maya.cmds as cmds
 import maya.mel as mel
 
-import os, pprint, time, json, re, sys
+import os, pprint, time, json, re, sys, glob
 
 
 from source.YCPackages import (neon, yt_py)
@@ -89,4 +89,54 @@ def check_yeti_components_name_convention() -> list:
 
     
     return prefix_error_list + postfix_error_list
+
+
+
+
+
+
+
+
+def check_texture_path_convention() -> list:
+    error_list = []
+
+    YCPackages_dir_path = os.environ['HGWEAVER_YETI_ROOT'] + "/" + "source" + "/" + "YCPackages"
+    YCPackages_dir_path = YCPackages_dir_path.replace("\\", "/")
+    mel.eval('source \"{0}/yeti_util.mel\"'.format(YCPackages_dir_path))
+
+
+    all_yetiND_list = cmds.ls(type='pgYetiMaya')
+
+
+    whole_info_dict = {}
+    for _y_node in all_yetiND_list:
+        tex_node_and_tex_list = mel.eval("get_mask_path_list(\"{0}\");".format(_y_node))
+        tex_node_list = tex_node_and_tex_list[0::2]
+        tex_fname_list = tex_node_and_tex_list[1::2]
+        whole_info_dict[_y_node] = zip(tex_node_list, tex_fname_list)
+
+
+    for _y_node, _tex_graph_info in whole_info_dict.items():
+        tex_dirpath = cmds.getAttr(_y_node+'.imageSearchPath')
+
+        for _tex_node, _tex_fname in _tex_graph_info:
+            _fullpath = '{0}/{1}'.format(tex_dirpath, _tex_fname)
+            if os.path.isfile(_tex_fname) == True:
+                error_list.append([_y_node, _tex_node])
+            elif '<udim>' in _fullpath.lower():
+                if '<udim>' in _fullpath:
+                    _fullpath_with_magic_star = _fullpath.replace('<udim>', '*')
+                elif '<UDIM>' in _fullpath:
+                    _fullpath_with_magic_star = _fullpath.replace('<UDIM>', '*')
+                else:
+                    _fullpath_with_magic_star = _fullpath
+
+                if glob.glob(_fullpath_with_magic_star) == []:
+                    error_list.append([_y_node, _tex_node])
+
+            elif os.path.exists(_fullpath) == False:
+                error_list.append([_y_node, _tex_node])
+            
+
+    return error_list
 
