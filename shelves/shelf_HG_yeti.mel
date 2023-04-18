@@ -49,6 +49,41 @@ global proc shelf_HG_yeti () {
         -manage 1
         -visible 1
         -preventOverride 0
+        -annotation "\nimport os\nfrom tempfile import gettempdir\n\ndef get_pref_path() -> str:\n    temp_dir = gettempdir() + \"/\" + \"hgweaverYeti\"\n    return temp_dir + \"/\" + \"hgyeti_pref.json\"\n    \n\ndef check_pref() -> bool:\n    pref_fullpath    = get_pref_path()\n    temp_dir         = os.path.dirname(pref_fullpath)\n\n    if os.path.exists(temp_dir) == False:\n        return False\n    if os.path.exists(pref_fullpath) == False:\n        return False\n        \n        \n    return True\n    \ndef get_env_val(pref_path :str) -> str:\n    yeti_root_path = \"\"\n    with open(pref_path, \"r\") as f:\n        yeti_root_path = f.read()\n    return yeti_root_path\n    \ndef set_env_val(pref_path :str, yeti_root_path :str) -> None:\n    pre_dir = os.path.dirname(pref_path)\n    if os.path.exists(pre_dir) == False:\n        os.makedirs(pre_dir)\n    with open(pref_path, \"w\")  as f:\n        f.write(yeti_root_path)\n        \n        \n    \ndef set_yeti_env(yeti_root_path :str) -> None:\n    os.environ[\"HGWEAVER_YETI_ROOT\"] = yeti_root_path\n    \n\n\ndef set_env():\n\n    res = os.environ.get(\"HGWEAVER_YETI_ROOT\")\n    if res == None:\n        \n        if check_pref() == True:\n            pref_path      = get_pref_path()\n            yeti_root_path = get_env_val(pref_path)\n            set_yeti_env(yeti_root_path)\n        else:\n            selected_directory = cmds.fileDialog2(dialogStyle=2, fileMode=3)\n            if selected_directory  == []:\n                return\n            selected_directory = selected_directory[0]\n                \n            pref_path = get_pref_path()\n            set_yeti_env(selected_directory)\n            set_env_val(pref_path, selected_directory)\n            \n\n\nset_env()\n" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "\nimport os\nfrom tempfile import gettempdir\n\ndef get_pref_path() ..." 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -imageOverlayLabel "setEnv" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.6 
+        -image "pythonFamily.png" 
+        -image1 "pythonFamily.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "\nimport os\nfrom tempfile import gettempdir\n\ndef get_pref_path() -> str:\n    temp_dir = gettempdir() + \"/\" + \"hgweaverYeti\"\n    return temp_dir + \"/\" + \"hgyeti_pref.json\"\n    \n\ndef check_pref() -> bool:\n    pref_fullpath    = get_pref_path()\n    temp_dir         = os.path.dirname(pref_fullpath)\n\n    if os.path.exists(temp_dir) == False:\n        return False\n    if os.path.exists(pref_fullpath) == False:\n        return False\n        \n        \n    return True\n    \ndef get_env_val(pref_path :str) -> str:\n    yeti_root_path = \"\"\n    with open(pref_path, \"r\") as f:\n        yeti_root_path = f.read()\n    return yeti_root_path\n    \ndef set_env_val(pref_path :str, yeti_root_path :str) -> None:\n    pre_dir = os.path.dirname(pref_path)\n    if os.path.exists(pre_dir) == False:\n        os.makedirs(pre_dir)\n    with open(pref_path, \"w\")  as f:\n        f.write(yeti_root_path)\n        \n        \n    \ndef set_yeti_env(yeti_root_path :str) -> None:\n    os.environ[\"HGWEAVER_YETI_ROOT\"] = yeti_root_path\n    \n\n\ndef set_env():\n\n    res = os.environ.get(\"HGWEAVER_YETI_ROOT\")\n    if res == None:\n        \n        if check_pref() == True:\n            pref_path      = get_pref_path()\n            yeti_root_path = get_env_val(pref_path)\n            set_yeti_env(yeti_root_path)\n        else:\n            selected_directory = cmds.fileDialog2(dialogStyle=2, fileMode=3)\n            if selected_directory  == []:\n                return\n            selected_directory = selected_directory[0]\n                \n            pref_path = get_pref_path()\n            set_yeti_env(selected_directory)\n            set_env_val(pref_path, selected_directory)\n            \n    if \"HGWEAVER_YETI_SHELVES\" not in os.environ:\n        os.environ[\"HGWEAVER_YETI_SHELVES\"] = os.environ.get(\"HGWEAVER_YETI_ROOT\") + \"/\" + \"shelves\"\n            \n\n\nset_env()\n" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
         -annotation "import os, sys\nfrom importlib import reload\nyeti_root_path = os.path.realpath(os.environ[\"HGWEAVER_YETI_ROOT\"])\nyeti_root_path = yeti_root_path.replace(\"\\\\\", \"/\")\n\nif yeti_root_path not in sys.path:\n    sys.path.append(yeti_root_path)\n\n\nfrom source.milki.toolkit import YC_exporter\nreload(YC_exporter)\n\nexport_engine = YC_exporter.CFXExporter()\n\nimport traceback\ntry:\n    cmds.select(cl=True)\n    cmds.select(\"ball_GRP\")\n    tar = cmds.ls(sl=True)[0]\n    _path = \"C:/Users/runab/Documents/pipeTest/data/resource/YC_milki_test\"\n    export_engine.pre_execute(tar, \"default\", \"v001\", _path)\n    export_engine.execute()\nexcept:\n    traceback.print_exc()\n\n" 
         -enableBackground 0
         -backgroundColor 0 0 0 

@@ -1,0 +1,1 @@
+cp ./shelves/shelf_HG_yeti.mel ~/maya/2023/prefs/shelves/
