@@ -372,6 +372,14 @@ class Ui_YC_main_view(QtCore.QObject):
                 _log_item.setWhatsThis(_log[0])
                 self.YC_check_log_contents_lw.addItem(_log_item)
 
+    def update_check_item_view(self, cur_title :str, cur_err_logs :list) -> None:
+        check_list = ["Name", "Texture"]
+        for _check_title in check_list:
+            if _check_title == cur_title:
+                self.set_log_item_info(_check_title, cur_err_logs)
+            else:
+                self.set_log_item_info(_check_title, [])
+
     def set_assetname(self, input_name :str) -> None:
         self.YC_name_info_contents_le.setText(input_name)
 

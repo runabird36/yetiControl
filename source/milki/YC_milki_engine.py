@@ -128,11 +128,13 @@ class YCMilkiController(QtGui.QMainWindow):
         self._ui.YC_pub_check_contents_lw.clear()
         if check_title == "Name":
             name_check_log = YC_checker.check_yeti_components_name_convention()
-            self._ui.set_log_item_info(check_title, name_check_log)
+            # self._ui.set_log_item_info(check_title, name_check_log)
+            self._ui.update_check_item_view(check_title, name_check_log)
             self._ui.set_error_view(check_title, name_check_log)
         if check_title == "Texture":
-            name_check_log = YC_checker.check_texture_path_convention()
-            self._ui.set_log_item_info(check_title, name_check_log)
+            tex_check_log = YC_checker.check_texture_path_convention()
+            # self._ui.set_log_item_info(check_title, tex_check_log)
+            self._ui.update_check_item_view(check_title, tex_check_log)
             self._ui.set_error_view(check_title, name_check_log)
         
 
