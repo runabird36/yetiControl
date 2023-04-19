@@ -3,16 +3,27 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGuiOrig
 import PySide2.QtWidgets as QtGui
 from os import path, getcwd
-import sys
+from pprint import pprint
+import sys, re, yaml
 from qt_material import apply_stylesheet
 
-# from source.YC_core_module import dragdrop_img
-dragdrop_img    = getcwd() + "/" + "resource" + "/" + "icons" + "/" + "dragdrop_img.png"
+if getcwd().replace("\\", "/") not in sys.path:
+    sys.path.append(getcwd().replace("\\", "/"))
+
+from source.YC_core_module import (dragdrop_img, yeti_img, json_img, maya_img, is_windows)
+# dragdrop_img    = getcwd() + "/" + "resource" + "/" + "icons" + "/" + "dragdrop_img.png"
 test_thumb      = getcwd() + "/" + "resource" + "/" + "icons" + "/" + "pgYeti_icon.png"
 
 
 
-
+def load_yaml_file(yaml_path):
+    try:
+        with open(yaml_path) as f:
+            load_yml = yaml.safe_load(f)
+        return load_yml
+    except Exception as e:
+        print(str(e))
+        return
 
 def mask_image(img_fullpath, size = 128):
     img_path = img_fullpath
@@ -156,16 +167,79 @@ class DragDropWidget(QtGui.QWidget):
         _p.end()
 
 
+class RoundCheckBox(QtGui.QCheckBox):
+    def __init__(self, parent=None):
+        super(RoundCheckBox, self).__init__(parent)
+        # self.setCheckable(True)
+        self.setStyleSheet('''
+            QCheckBox {
+                border: none;
+            }
+            QCheckBox::indicator {
+                width: 20px;
+                height: 20px;
+            }
+            QCheckBox::indicator::unchecked {
+                border-radius: 10px;
+                background-color: #b2496d;
+            }
+            QCheckBox::indicator::checked {
+                border-radius: 10px;
+                background-color: #578a68;
+            }
+        ''')
+
 class custom_file_item(QtGui.QWidget):
-    def __ini__(self, _parent=None) -> None:
-        super(custom_file_item, self).__init__()
+    def __init__(self, _parent=None) -> None:
+        super(custom_file_item, self).__init__(_parent)
         self.setupUi()
 
     def setupUi(self) -> None:
 
-        self.main_
+        self.file_type_thumb_lb = QtGui.QLabel()
+        self.file_name_lb       = QtGui.QLabel()
+        self.check_exists_cb    = RoundCheckBox()
 
-        self.setLayout()
+        
+        
+        self.main_hl = QtGui.QHBoxLayout()
+        self.main_hl.addWidget(self.file_type_thumb_lb)
+        self.main_hl.addWidget(self.file_name_lb)
+        self.main_hl.addWidget(self.check_exists_cb)
+        self.main_hl.setStretch(0, 1)
+        self.main_hl.setStretch(1, 5)
+        self.main_hl.setStretch(2, 1)
+        self.setLayout(self.main_hl)
+        
+    def set_info(self, input_path :str) -> None:
+        _path, _ext = path.splitext(input_path)
+        file_name = path.basename(input_path)
+        if _ext == ".grm":
+            icon_path = yeti_img
+        elif _ext == ".json":
+            icon_path = json_img
+        elif _ext in [".mb", ".ma"]:
+            icon_path = maya_img
+
+        size = 32
+        pr = QtGuiOrig.QWindow().devicePixelRatio()
+        type_pixmap = QtGuiOrig.QPixmap(icon_path)
+        type_pixmap.setDevicePixelRatio(pr)
+        size *= pr
+        type_pixmap = type_pixmap.scaled(size, size, QtCore.Qt.KeepAspectRatio, 
+                                                     QtCore.Qt.SmoothTransformation)
+        
+        self.file_type_thumb_lb.setPixmap(type_pixmap)
+
+        self.file_name_lb.setText(file_name)
+
+        if path.exists(input_path) == True:
+            self.check_exists_cb.setChecked(True)
+        else:
+            self.check_exists_cb.setChecked(False)
+
+        self.check_exists_cb.setCheckable(False)
+
 
 
 class custom_listwidget(QtGui.QListWidget):
@@ -174,7 +248,7 @@ class custom_listwidget(QtGui.QListWidget):
 
     def add_item(self, input_path :str) -> None:
         
-        _custom_item = QtGui.UploadProcess_item()
+        _custom_item = custom_file_item()
         _custom_item.set_info(input_path)
         
     
@@ -184,17 +258,12 @@ class custom_listwidget(QtGui.QListWidget):
         self.addItem(_listwidet_item)
         self.setItemWidget(_listwidet_item, _custom_item)
 
-
-
-class PubView(QtGui.QDialog):
+class PubSpecWidget(QtGui.QWidget):
     def __init__(self, _parent=None) -> None:
-        super(PubView, self).__init__(_parent)
+        super(PubSpecWidget, self).__init__(_parent)
         self.setupUi()
 
-    def setupUi(self):
-
-        self.drag_drop_wg = DragDropWidget()
-
+    def setupUi(self) -> None:
         self.thumb_lb = QtGui.QLabel()
         thumb_pixmap = mask_image(test_thumb, 64)
         self.thumb_lb.setPixmap(thumb_pixmap)
@@ -236,20 +305,71 @@ class PubView(QtGui.QDialog):
         self.left_sub_vl.addLayout(self.pub_info_gl)
         
 
+
+
+        self.file_check_lw = custom_listwidget()
+
+
         self.right_sub_vl = QtGui.QVBoxLayout()
+        self.right_sub_vl.addWidget(self.file_check_lw)
 
         self.contents_main_hl = QtGui.QHBoxLayout()
         self.contents_main_hl.addLayout(self.left_sub_vl)
         self.contents_main_hl.addLayout(self.right_sub_vl)
 
+        self.setLayout(self.contents_main_hl)
 
-        self.contents_wg = QtGui.QWidget()
-        self.contents_wg.setLayout(self.contents_main_hl)
+    def set_info_from_pubpath(self, dropped_path :str) -> None:
+        
+        def make_exists_fullpath(pub_path :str, search_path :str, rel_path :str) -> str:
+            check_path = path.join(search_path, rel_path)
+            if path.exists(check_path) == True:
+                return check_path
+            else:
+                pub_dirpath = path.dirname(pub_path)
+                return path.join(pub_dirpath, rel_path)
+
+        def get_realpath(pub_path :str, pub_info :dict) -> set:
+            search_path         = pub_info["SEARCH_PATH"]
+            
+            grm_relpaths        = pub_info["PUBS"]["GRMS"]
+            attr_json_relpath   = pub_info["PUBS"]["ATTR_JSON"].replace("\\", "/")
+            main_json_relpath   = pub_info["PUBS"]["MAIN_JSON"].replace("\\", "/")
+            maya_relpath        = pub_info["PUBS"]["MAYA"].replace("\\", "/")
+
+            grm_fullpath_list   = []
+            for grm_relpath in grm_relpaths: grm_fullpath_list.append(make_exists_fullpath(pub_path, search_path, grm_relpath))
+            attr_json_fullpath  = make_exists_fullpath(pub_path, search_path, attr_json_relpath)
+            main_json_fullpath  = make_exists_fullpath(pub_path, search_path, main_json_relpath)
+            maya_fullpath       = make_exists_fullpath(pub_path, search_path, maya_relpath)
+            return grm_fullpath_list, attr_json_fullpath, main_json_fullpath, maya_fullpath
+        
+        pub_info = load_yaml_file(dropped_path)
+        grm_fullpath_list, attr_json_path, main_json_path, maya_path = get_realpath(dropped_path, pub_info)
+        for grm_path in grm_fullpath_list: self.file_check_lw.add_item(grm_path)
+        self.file_check_lw.add_item(attr_json_path)
+        self.file_check_lw.add_item(main_json_path)
+        self.file_check_lw.add_item(maya_path)
+
+
+
+class PubView(QtGui.QDialog):
+    def __init__(self, _parent=None) -> None:
+        super(PubView, self).__init__(_parent)
+
+        self.CUR_STEP = "CHECK_FILE"
+        self.setupUi()
+
+    def setupUi(self):
+
+        self.drag_drop_wg = DragDropWidget()
+
+        self.pub_spec_wg = PubSpecWidget()
 
         self.main_tb = QtGui.QTabWidget()
         self.main_tb.setStyleSheet("QTabBar::tab { border: 0; height: 0px;}")
         self.main_tb.addTab(self.drag_drop_wg, "Tab 1")
-        self.main_tb.addTab(self.contents_wg, "Tab 2")
+        self.main_tb.addTab(self.pub_spec_wg, "Tab 2")
 
         self.main_vl = QtGui.QVBoxLayout()
         self.main_vl.addWidget(self.main_tb)
@@ -257,14 +377,43 @@ class PubView(QtGui.QDialog):
         self.setLayout(self.main_vl)
 
 
-        self.main_tb.setCurrentIndex(1)
+        self.main_tb.setCurrentIndex(0)
         self.resize(600, 400)
+        self.setAcceptDrops(True)
 
         apply_stylesheet(self, "dark_blue.xml")
+    
 
+    def dragEnterEvent(self, event: QtGuiOrig.QDragEnterEvent) -> None:
+        if self.CUR_STEP != "CHECK_FILE":
+            event.ignore()
 
+        if event.mimeData().hasUrls():
+            target_path = event.mimeData().urls()[0]
+            target_path = target_path.toString()
+            _path, _ext = path.splitext(target_path)
+            
+            if _ext == ".yaml":
+                event.accept()
+        else:
+            event.ignore()
 
+    def dragMoveEvent(self, event: QtGuiOrig.QDragMoveEvent) -> None:
+        pass
 
+    def dropEvent(self, event: QtGuiOrig.QDropEvent) -> None:
+        pub_path = event.mimeData().urls()[0]
+        pub_path = pub_path.toString()
+        if is_windows() == True:
+            pub_path = re.sub(r"file:///", "", pub_path)
+            self.pub_spec_wg.set_info_from_pubpath(pub_path)
+            self.switch_view()
+
+    def switch_view(self, to_type :str="PUB_SPEC") -> None:
+        if to_type == "CHECK_FILE":
+            self.main_tb.setCurrentIndex(0)
+        else:
+            self.main_tb.setCurrentIndex(1)
 
 app = QtGui.QApplication(sys.argv)
 

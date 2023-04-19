@@ -1,5 +1,7 @@
-
-from maya.cmds import ls, workspace
+try:
+    from maya.cmds import ls, workspace
+except:
+    print("Standalone")
 from os import environ, path
 import sys
 
@@ -15,8 +17,10 @@ __HGWEAVER_RESOURCE_PATH__  = __HGWEAVER_YETI_ROOT__ + "/" + "resource"
 
 # image path
 cam_img         = __HGWEAVER_RESOURCE_PATH__ + "/" + "icons" + "/" + "camera.png"
-dragdrop_img    = __HGWEAVER_RESOURCE_PATH__ + "/" + "icons" + "/" + "dragdrop_img.png"
-
+dragdrop_img    = __HGWEAVER_RESOURCE_PATH__ + "/" + "icons" + "/" + "folder_img.png"
+yeti_img        = __HGWEAVER_RESOURCE_PATH__ + "/" + "icons" + "/" + "pgYeti_icon.png"
+json_img        = __HGWEAVER_RESOURCE_PATH__ + "/" + "icons" + "/" + "json_file.png"
+maya_img        = __HGWEAVER_RESOURCE_PATH__ + "/" + "icons" + "/" + "maya_icon_new_2.png"
 
 
 def is_windows(platform=None):
