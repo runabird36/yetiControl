@@ -14,7 +14,8 @@ __HGWEAVER_RESOURCE_PATH__  = __HGWEAVER_YETI_ROOT__ + "/" + "resource"
 
 
 # image path
-cam_img = __HGWEAVER_RESOURCE_PATH__ + "/" + "icons" + "/" + "camera.png"
+cam_img         = __HGWEAVER_RESOURCE_PATH__ + "/" + "icons" + "/" + "camera.png"
+dragdrop_img    = __HGWEAVER_RESOURCE_PATH__ + "/" + "icons" + "/" + "dragdrop_img.png"
 
 
 
