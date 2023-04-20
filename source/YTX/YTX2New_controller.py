@@ -5,35 +5,31 @@ import PySide2.QtWidgets as QtGui
 import maya.cmds as cmds
 import maya.mel as mel
 from source.YCPackages import (neon, yt_py)
-from general_md_3x import LUCY
-import shotgun_api3
 import os, json, re, time, sys
 from functools import partial
 from pprint import pprint
 
 
-from YTX2New_path_module import (HAIR_STEP_PROJECTS_LIST)
-
-import YTX2New_info_model
+import source.YTX.YTX2New_info_model as YTX2New_info_model
 import importlib
 importlib.reload(YTX2New_info_model)
 
-import YTX2New_toolkit as YT
+import source.YTX.YTX2New_toolkit as YT
 importlib.reload(YT)
 
-import YTX2New_ui_progressbar
+import source.YTX.YTX2New_ui_progressbar as YTX2New_ui_progressbar
 importlib.reload(YTX2New_ui_progressbar)
 
-from dialog import YTX2_select_view
-importlib.reload(YTX2_select_view)
-
-from dialog import YTX2_furcache_view
+from source.YTX.dialog import YTX2_furcache_view
 importlib.reload(YTX2_furcache_view)
 
-from dialog import YTX2_assign_mode_dialog
+from source.YTX.dialog import YTX2_assign_mode_dialog
 importlib.reload(YTX2_assign_mode_dialog)
 
-from customQT import core
+from source.YTX.dialog import YTX2New_pubdata_view
+importlib.reload(YTX2New_pubdata_view)
+
+from source.YCPackages.hgweaverQT import core
 importlib.reload(core)
 
 
@@ -51,72 +47,12 @@ class pubInfo():
     pub_path            : str
     pub_json_path       : str
     pub_json_attr_path  : str
-    desc                : str
-    task_name           : str
     vernum              : str
-    created_date        : str
-    created_by          : str
-    id                  : str
     
 
-class pubInfoHub():
-    '''
-    {
-        taskname : {
-                        pub_versions : {
-                                        pub_version_number : pubInfo,
-
-                                    },
-                        createdBy : str
-
-                    }
-
-    }
-    '''
-    __hub = {}
-
-    @property
-    def hub(self):
-        return self.__hub
-
-    def is_empty(self):
-        if self.hub == {}:
-            return True
-        else:
-            return False
-
-    def add_task(self, task_name: str) -> None:
-        if task_name in self.hub:
-            return
-        self.hub.update({task_name:{'pub_versions':{}}})
-
-    def add_pubversion(self, task_name: str, pub_vernum: str, pub_info: pubInfo) -> None:
-        if pub_vernum in self.hub[task_name]['pub_versions']:
-            return
-        variant_dict = self.hub[task_name]['pub_versions']
-        variant_dict.update({pub_vernum:pub_info})
-
-    
-
-
-
-    def get_all_task(self) -> list:
-        return list(self.hub.keys())
-
-    def get_all_pubversions(self, task_name: str) -> list:
-        return list(self.hub[task_name]['pub_versions'].keys())
-
-    def get_pubinfo(self, task_name: str, pub_vernum: str) -> pubInfo:
-        return self.hub[task_name]['pub_versions'][pub_vernum]
-
-    def get_pub_user(self, task_name: str, pub_vernum: str) -> str:
-        return self.get_pubinfo(task_name, pub_vernum).created_by
         
     
     
-
-
-
 
 
 class CFXloadYeti():
@@ -126,22 +62,8 @@ class CFXloadYeti():
 
     def __init__(self):
         self.cur_assetname  = ""
-        self._sg            = self.connect_sg()
-        self.data_model     = pubInfoHub()
         self.__PIPESTEP__   = "characterfx"
         
-
-    def connect_sg(self):
-        print('connect sg')
-        SERVER_PATH = 'https://giantstep.shotgunstudio.com'
-        SCRIPT_NAME = 'basic_api'
-        SCRIPT_KEY  = 'b6dbe937304b44ce2b470d9f817e01941e9412029494bf48896b0617db4c9a1e'
-
-        try:
-            proxied_sg = shotgun_api3.Shotgun(SERVER_PATH, SCRIPT_NAME, SCRIPT_KEY, http_proxy='proxy1.giantstep.net:9098')
-        except:
-            proxied_sg = shotgun_api3.Shotgun(SERVER_PATH, SCRIPT_NAME, SCRIPT_KEY, http_proxy='')
-        return proxied_sg
 
     def get_target(self) -> str:
 
@@ -174,69 +96,10 @@ class CFXloadYeti():
         return check_bar_exist(asset_name)
 
 
-    # def _get_path_info(self, prj_info_dict, asset_name):
-    #     ''' This for getting ma path and json path info '''
-
-    #     files = []
-    #     filters = [['project', 'is', prj_info_dict],
-    #                 {
-    #                     'filter_operator' : 'all',
-    #                     'filters': [['code', 'contains',  'pub_'+asset_name], ['code', 'contains', 'cfx']]
-    #                  }
-
-    #                   ]
-    #     field = ['code', 'path','created_at']
-
-    #     try:
-    #         files =  self._sg.find('PublishedFile', filters, field)
-    #     except Exception as e:
-    #         print(e)
-    #         files =[]
-    #     print('get cfx file')
-
-    #     cfx_mbs = []
-    #     print(files)
-    #     for file in files:
-    #         fileName =  file['path']['name']
-    #         if not 'publish' in fileName and not 'pub' in fileName:
-    #             files.remove(file)
-    #             continue
-
-    #         ext = os.path.splitext(fileName)[1]
-    #         if not ext in ['.mb', '.ma']:
-    #             continue
-    #         cfx_mbs.append(file)
-
-
-    #     print(cfx_mbs)
-    #     cfx_pub_path = cfx_mbs[0]['path']['url']
-    #     cfx_pub_dir = os.path.dirname(cfx_pub_path)
-
-    #     cfx_pub_json_dir = cfx_pub_dir.replace('/cfx/pub/mb', '/cfx/pub/json')
-    #     json_full_path = '{0}/pub_{1}_cfx.json'.format(cfx_pub_json_dir, asset_name)
-
-    #     if 'file:///' in cfx_pub_path:
-    #         cfx_pub_path = cfx_pub_path.replace('file:///','')
-
-    #     if 'file:///' in json_full_path:
-    #         json_full_path = json_full_path.replace('file:///','')
-    #         attr_json_full_path = json_full_path.replace('_cfx.json', '_cfx_attr.json')
-
-    #     return [cfx_pub_path, json_full_path, attr_json_full_path]
-
-
-
     def read_json(self, write_json_path):
         with open(write_json_path, 'r') as f:
             json_data_from_file = json.load(f)
         return json_data_from_file
-
-
-
-
-    
-
-
 
 
     def _simple_import(self, filePath):
@@ -252,16 +115,6 @@ class CFXloadYeti():
             _count += len(all_asset_tar_list)
 
         return _count
-
-
-
-    # def get_b2TVC_json(self, assetname):
-    #     template = 'X:/projects/2020_08_ncB2/assets/char/{0}/cfx/pub/json/pub_{0}_cfx.json'
-    #     template_02 = 'X:/projects/2020_08_ncB2/assets/char/{0}/cfx/pub/json/pub_{0}_cfx_attr.json'
-    #     return template.format(assetname), template_02.format(assetname)
-
-
-    
 
 
     def check_shapes_data(self, selected_pubinfo: pubInfo) -> set:
@@ -309,58 +162,14 @@ class CFXloadYeti():
         return
         
         
-        
-        
+     
 
-
-
-
-    def query_pubs(self, project, assetname):
-        files = []
-        filters = [['project.Project.name', 'is', project],
-                    {
-                        'filter_operator' : 'all',
-                        'filters': [
-                                    ['code', 'contains',  assetname],
-                                    ['sg_published_pipe_step', 'is', self.__PIPESTEP__]
-                                   ]
-                     }
-
-                      ]
-        field = ['code', 'path','created_at', 'task', 'description', 'created_by', 'task.Tasks.task_assignees']
-
-        try:
-            files =  self._sg.find('PublishedFile', filters, field)
-        except Exception as e:
-            print(e)
-            files =[]
-        # pprint(files)
-        return files
-
-    def modify_info(self, sg_info_dict: dict) -> set:
-        def make_json_paths(maya_path: str) ->  set:
-            maya_dirpath = os.path.dirname(maya_path)
-            temp_path = re.sub("/pub/mb/", "/pub/json/", maya_path)
-            json_full_path = re.sub(".mb$", ".json", temp_path)
-            attr_json_full_path = re.sub(".mb$", "_attr.json", temp_path)
-            return json_full_path, attr_json_full_path
-
-        temp_path           = sg_info_dict['path']['url']
-        pub_path            = re.sub("^file:////", "/", temp_path)
-        pub_json_path, pub_json_attr_path = make_json_paths(pub_path)
-        desc                = sg_info_dict['description']
-        task_name           = sg_info_dict['task']['name']
-        vernum              = LUCY.get_dev_3digit_vernum(input_path=pub_path)
-        created_at          = sg_info_dict['created_at'].strftime("%Y.%m.%d")
-        created_by          = sg_info_dict['created_by']['name']
-        id                  = str(sg_info_dict['id'])
-        return pub_path, pub_json_path, pub_json_attr_path, desc, task_name, vernum, created_at, created_by, id
-
-    
-    def sg_2_pubInfo(self, pub_sg_list: list) -> Generator:
-        for pub_info_dict in pub_sg_list:
-            pub_path, pub_json_path, pub_json_attr_path, desc, task_name, vernum, created_at, created_by, id = self.modify_info(pub_info_dict)
-            yield pubInfo(pub_path, pub_json_path, pub_json_attr_path, desc, task_name, vernum, created_at, created_by, id)
+    def con_2_pubInfo(self, pub_infos: dict) -> pubInfo:
+        pub_path            = pub_infos["MAYA"]
+        pub_json_path       = pub_infos["MAIN_JSON"]
+        pub_json_attr_path  = pub_infos["ATTR_JSON"]
+        vernum              = pub_infos["VERSION"]
+        return pubInfo(pub_path, pub_json_path, pub_json_attr_path, vernum)
 
 
     def get_yeti_node_name(self, main_data):
@@ -373,12 +182,9 @@ class CFXloadYeti():
 
 
 
-    def do_assign(self, selected_pubinfo: pubInfo, **kwargs):
+    def do_assign(self, selected_pubinfo: pubInfo, *args):
 
-        
-
-        
-
+        parent_view = args[0]
         print('Set main data model from pub json file')
         all_mesh_attr_list = []
         asset_name = self.cur_assetname
@@ -529,7 +335,7 @@ class CFXloadYeti():
         del yeti_progressbar_window
 
 
-        confirm_dialog = core.get_confirm_dialog("YTX2", "어셋 이름 : {0}\n어싸인 완료!".format(self.cur_assetname), "clear", ["ok"])
+        confirm_dialog = core.get_confirm_dialog(parent_view, "YTX2", "어셋 이름 : {0}\n어싸인 완료!".format(self.cur_assetname), "clear", ["ok"])
 
 
     def do_furCache_assign(self, *args, **kwargs) -> None:
@@ -675,9 +481,6 @@ class CFXloadYeti():
 
         
 
-
-
-
     def run(self):
         def _maya_main_window():
             '''
@@ -706,47 +509,40 @@ class CFXloadYeti():
         else:
             return
         if assign_mode == None:
-            confirm_dialog = core.get_confirm_dialog("YTX2", "Assign mode가 선택되지 않았습니다.", "warnning", ["ok"])
+            confirm_dialog = core.get_confirm_dialog(_maya_view, "YTX2", "Assign mode가 선택되지 않았습니다.", "warnning", ["ok"])
             return
 
         
         print('asset name')
         asset_name = self.get_target()
         if asset_name == "":
-            confirm_dialog = core.get_confirm_dialog("YTX2", "어셋이 선택되지 않았습니다.", "warnning", ["ok"])
+            confirm_dialog = core.get_confirm_dialog(_maya_view, "YTX2", "어셋이 선택되지 않았습니다.", "warnning", ["ok"])
             return
         
         self.cur_assetname = asset_name
 
 
 
-        pub_cfx_files_list = self.query_pubs(prj_name, asset_name)
-        pub_cfx_files_list.sort(key=lambda x : x.get("created_at"))
-        
-        if pub_cfx_files_list == []:
-            confirm_dialog = core.get_confirm_dialog("YTX2", "샷건에서 정보를 가져올 수 없습니다.", "warnning", ["ok"])
-            return
-        for pub_info in self.sg_2_pubInfo(pub_cfx_files_list):
-            self.data_model.add_task(pub_info.task_name)
-            self.data_model.add_pubversion(pub_info.task_name, pub_info.vernum, pub_info)
-        
-        
         
         
         
         
         
         if assign_mode == ".grm (Asset)":
-            self.ldv_select_view = YTX2_select_view.Ui_SelectPubDialog(_maya_view, self.data_model)
-            self.ldv_select_view.close_signal.connect(partial(self.do_assign, MAYA_VIEW=_maya_view))
-            self.ldv_select_view.check_modeling.connect(self.check_shapes_data)
-            self.ldv_select_view.show()
-        elif assign_mode == ".fur (Shot)":
-            the_lastes_pubinfo = pub_cfx_files_list[-1]
+            
+            self.pub_check_view = YTX2New_pubdata_view.PubView()
+            if self.pub_check_view.exec():
+                pub_infos = self.pub_check_view.get_pub_infos()
+                pub_info = self.con_2_pubInfo(pub_infos)
 
-            self.fur_cache_view = YTX2_furcache_view.Ui_YTX2_fur_mw()
-            self.fur_cache_view.close_signal.connect(partial(self.do_furCache_assign, the_lastes_pubinfo))
-            self.fur_cache_view.show()
+                self.do_assign(pub_info, _maya_view)
+
+        elif assign_mode == ".fur (Shot)":
+            pass
+
+            # self.fur_cache_view = YTX2_furcache_view.Ui_YTX2_fur_mw()
+            # self.fur_cache_view.close_signal.connect(partial(self.do_furCache_assign, the_lastes_pubinfo))
+            # self.fur_cache_view.show()    
         return
 
 

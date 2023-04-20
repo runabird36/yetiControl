@@ -3,7 +3,7 @@
 
 import maya.cmds as cmds
 import maya.mel as mel
-from maya_md import neon, yt_py
+from source.YCPackages import neon, yt_py
 import re
 from traceback import print_exc
 

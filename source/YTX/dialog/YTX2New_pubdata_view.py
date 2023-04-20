@@ -3,16 +3,17 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGuiOrig
 import PySide2.QtWidgets as QtGui
 from os import path, getcwd
+from functools import partial
 from pprint import pprint
 import sys, re, yaml
 from qt_material import apply_stylesheet
 
-if getcwd().replace("\\", "/") not in sys.path:
-    sys.path.append(getcwd().replace("\\", "/"))
+# if getcwd().replace("\\", "/") not in sys.path:
+#     sys.path.append(getcwd().replace("\\", "/"))
 
 from source.YC_core_module import (dragdrop_img, yeti_img, json_img, maya_img, is_windows)
 # dragdrop_img    = getcwd() + "/" + "resource" + "/" + "icons" + "/" + "dragdrop_img.png"
-test_thumb      = getcwd() + "/" + "resource" + "/" + "icons" + "/" + "pgYeti_icon.png"
+# test_thumb      = getcwd() + "/" + "resource" + "/" + "icons" + "/" + "pgYeti_icon.png"
 
 
 
@@ -167,17 +168,45 @@ class DragDropWidget(QtGui.QWidget):
         _p.end()
 
 
+class StatusLabel(QtGui.QLabel):
+    def __init__(self, _parent=None) -> None:
+        super(StatusLabel, self).__init__(_parent)
+
+    @property
+    def CUR_STATUS(self) -> bool:
+        return self.__cur_status__
+
+    @CUR_STATUS.setter
+    def CUR_STATUS(self, _status :bool) -> None:
+        self.__cur_status__ = _status
+        self.repaint()
+
+    def paintEvent(self, e: QtGuiOrig.QPaintEvent) -> None:
+        cur_p = QtGuiOrig.QPainter(self)
+        cur_p.setRenderHint(QtGuiOrig.QPainter.Antialiasing)
+        if self.CUR_STATUS == True:
+            cur_p.setPen(QtGuiOrig.QPen(QtGuiOrig.QColor(0,255,0,200)))
+            cur_p.setBrush(QtGuiOrig.QBrush(QtGuiOrig.QColor(0,255,0,200)))
+        else:
+            cur_p.setPen(QtGuiOrig.QPen(QtGuiOrig.QColor(255,0,0,200)))
+            cur_p.setBrush(QtGuiOrig.QBrush(QtGuiOrig.QColor(255,0,0,200)))
+
+        
+        radius = 7
+        cur_p.drawEllipse(QtCore.QPoint(7,15), radius, radius)
+        
+        cur_p.end()
+
+
 class RoundCheckBox(QtGui.QCheckBox):
     def __init__(self, parent=None):
         super(RoundCheckBox, self).__init__(parent)
         # self.setCheckable(True)
         self.setStyleSheet('''
-            QCheckBox {
-                border: none;
-            }
             QCheckBox::indicator {
                 width: 20px;
                 height: 20px;
+                border: none;
             }
             QCheckBox::indicator::unchecked {
                 border-radius: 10px;
@@ -198,18 +227,18 @@ class custom_file_item(QtGui.QWidget):
 
         self.file_type_thumb_lb = QtGui.QLabel()
         self.file_name_lb       = QtGui.QLabel()
-        self.check_exists_cb    = RoundCheckBox()
-
+        self.check_exists_lb    = StatusLabel() 
         
         
         self.main_hl = QtGui.QHBoxLayout()
         self.main_hl.addWidget(self.file_type_thumb_lb)
         self.main_hl.addWidget(self.file_name_lb)
-        self.main_hl.addWidget(self.check_exists_cb)
+        self.main_hl.addWidget(self.check_exists_lb)
         self.main_hl.setStretch(0, 1)
         self.main_hl.setStretch(1, 5)
         self.main_hl.setStretch(2, 1)
         self.setLayout(self.main_hl)
+        self.setMinimumSize(300, 50)
         
     def set_info(self, input_path :str) -> None:
         _path, _ext = path.splitext(input_path)
@@ -232,19 +261,20 @@ class custom_file_item(QtGui.QWidget):
         self.file_type_thumb_lb.setPixmap(type_pixmap)
 
         self.file_name_lb.setText(file_name)
-
+        
         if path.exists(input_path) == True:
-            self.check_exists_cb.setChecked(True)
+            self.check_exists_lb.CUR_STATUS = True
         else:
-            self.check_exists_cb.setChecked(False)
+            self.check_exists_lb.CUR_STATUS = False
 
-        self.check_exists_cb.setCheckable(False)
 
 
 
 class custom_listwidget(QtGui.QListWidget):
     def __init__(self, _parent=None) -> None:
         super(custom_listwidget, self).__init__(_parent)
+        self.setMinimumSize(300, 200)
+        
 
     def add_item(self, input_path :str) -> None:
         
@@ -261,33 +291,47 @@ class custom_listwidget(QtGui.QListWidget):
 class PubSpecWidget(QtGui.QWidget):
     def __init__(self, _parent=None) -> None:
         super(PubSpecWidget, self).__init__(_parent)
+        self.content_widgets = []
+        self.pub_infos       = {}
         self.setupUi()
+
+    
 
     def setupUi(self) -> None:
         self.thumb_lb = QtGui.QLabel()
-        thumb_pixmap = mask_image(test_thumb, 64)
-        self.thumb_lb.setPixmap(thumb_pixmap)
+        # thumb_pixmap = mask_image(test_thumb, 64)
+        # self.thumb_lb.setPixmap(thumb_pixmap)
+        self.thumb_lb.setAlignment(QtCore.Qt.AlignCenter)
         self.thumb_lb.setStyleSheet('''
                                         QLabel {
                                             background-color: transparent;
                                             border: none;
-                                            padding-left: 50;
-                                            margin: 0;
+                                            margin: 10;
                                         }
                                     ''')
 
         self.assetname_lb = QtGui.QLabel("Asset Name")
+        self.assetname_lb.setStyleSheet('''QLabel{padding-left : 1px;}''')
         self.assetanem_contents_lb = QtGui.QLabel("...")
 
         self.variant_lb = QtGui.QLabel("Variant")
+        self.variant_lb.setStyleSheet('''QLabel{padding-left : 1px;}''')
         self.variant_contents_lb = QtGui.QLabel("...")
 
         self.version_lb = QtGui.QLabel("Version")
+        self.version_lb.setStyleSheet('''QLabel{padding-left : 1px;}''')
         self.version_contents_lb = QtGui.QLabel("...")
 
         self.desc_lb = QtGui.QLabel("Description")
+        self.desc_lb.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        self.desc_lb.setStyleSheet('''QLabel{padding-top : 7px;}''')
         self.desc_contents_te = QtGui.QTextBrowser()
         self.desc_contents_te.setText("...")
+
+        self.content_widgets.append(self.assetanem_contents_lb)
+        self.content_widgets.append(self.variant_contents_lb)
+        self.content_widgets.append(self.version_contents_lb)
+        self.content_widgets.append(self.desc_contents_te)
 
         self.pub_info_gl = QtGui.QGridLayout()
         self.pub_info_gl.addWidget(self.assetname_lb, 0, 0)
@@ -300,9 +344,15 @@ class PubSpecWidget(QtGui.QWidget):
         self.pub_info_gl.addWidget(self.desc_contents_te, 3, 1)
         self.pub_info_gl.setColumnStretch(0, 1)
         self.pub_info_gl.setColumnStretch(1, 3)
+        self.pub_info_gl.setRowStretch(0,1)
+        self.pub_info_gl.setRowStretch(1,1)
+        self.pub_info_gl.setRowStretch(2,1)
+        self.pub_info_gl.setRowStretch(3,3)
         self.left_sub_vl = QtGui.QVBoxLayout()
         self.left_sub_vl.addWidget(self.thumb_lb)
         self.left_sub_vl.addLayout(self.pub_info_gl)
+        self.left_sub_vl.setStretch(0,2)
+        self.left_sub_vl.setStretch(1,5)
         
 
 
@@ -318,6 +368,25 @@ class PubSpecWidget(QtGui.QWidget):
         self.contents_main_hl.addLayout(self.right_sub_vl)
 
         self.setLayout(self.contents_main_hl)
+        self.setMinimumSize(300, 300)
+        self.set_contents_stylesheet()
+
+    def set_contents_stylesheet(self) -> None:
+        background_color    = "#232629"
+        border_color        = "#232629"
+        for _widget in self.content_widgets:
+            if isinstance(_widget, QtGui.QLabel):
+                _widget.setStyleSheet(f'''
+                                        QLabel{{
+                                            background-color : {background_color};
+                                            border           : {border_color};
+                                            border-radius    : 15px;
+                                            padding-left     : 5px;
+                                        }}
+                                        ''')
+
+    def get_pub_info(self) -> dict:
+        return self.pub_infos
 
     def set_info_from_pubpath(self, dropped_path :str) -> None:
         
@@ -351,6 +420,29 @@ class PubSpecWidget(QtGui.QWidget):
         self.file_check_lw.add_item(main_json_path)
         self.file_check_lw.add_item(maya_path)
 
+        self.pub_infos["MAIN_JSON"] = main_json_path
+        self.pub_infos["ATTR_JSON"] = attr_json_path
+        self.pub_infos["MAYA"]      = maya_path
+        self.pub_infos["GROOMS"]    = grm_fullpath_list
+
+
+
+        # Set String Information
+        thumb_path      = pub_info["THUMBNAIL"].replace("\\", "/")
+        asset_name      = pub_info["ASSETNAME"]
+        variant_name    = pub_info["VARIANT"]
+        version_num     = pub_info["VERSION"]
+        desc            = pub_info["DESC"]
+
+        masked_pixmap = mask_image(thumb_path)
+        self.thumb_lb.setPixmap(masked_pixmap)
+
+        self.assetanem_contents_lb.setText(asset_name)
+        self.variant_contents_lb.setText(variant_name)
+        self.version_contents_lb.setText(version_num)
+        self.desc_contents_te.setText(desc)
+
+        self.pub_infos["VERSION"] = version_num
 
 
 class PubView(QtGui.QDialog):
@@ -371,18 +463,37 @@ class PubView(QtGui.QDialog):
         self.main_tb.addTab(self.drag_drop_wg, "Tab 1")
         self.main_tb.addTab(self.pub_spec_wg, "Tab 2")
 
+
+        h_spacer = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.assign_btn = QtGui.QPushButton("Assign")
+        self.assign_btn.clicked.connect(partial(self.set_res, True))
+        self.cancel_btn = QtGui.QPushButton("Cancel")
+        self.cancel_btn.clicked.connect(partial(self.set_res, False))
+
+        self.btn_hl = QtGui.QHBoxLayout()
+        self.btn_hl.addItem(h_spacer)
+        self.btn_hl.addWidget(self.assign_btn)
+        self.btn_hl.addWidget(self.cancel_btn)
+        self.btn_hl.setStretch(0,5)
+        self.btn_hl.setStretch(1,1)
+        self.btn_hl.setStretch(2,1)
+
         self.main_vl = QtGui.QVBoxLayout()
         self.main_vl.addWidget(self.main_tb)
+        
         
         self.setLayout(self.main_vl)
 
 
         self.main_tb.setCurrentIndex(0)
-        self.resize(600, 400)
+        self.setMinimumSize(750, 450)
         self.setAcceptDrops(True)
 
         apply_stylesheet(self, "dark_blue.xml")
-    
+
+
+    def after_drop_setupUi(self) -> None:
+        self.main_vl.addLayout(self.btn_hl)
 
     def dragEnterEvent(self, event: QtGuiOrig.QDragEnterEvent) -> None:
         if self.CUR_STEP != "CHECK_FILE":
@@ -414,10 +525,20 @@ class PubView(QtGui.QDialog):
             self.main_tb.setCurrentIndex(0)
         else:
             self.main_tb.setCurrentIndex(1)
+            self.after_drop_setupUi()
 
-app = QtGui.QApplication(sys.argv)
+    def set_res(self, status :bool) -> None:
+        if status == True:
+            self.accept()
+        else:
+            self.reject()
 
-w = PubView()
-w.show()
+    def get_pub_infos(self) -> dict:
+        return self.pub_spec_wg.get_pub_info()
 
-app.exec_()
+# app = QtGui.QApplication(sys.argv)
+
+# w = PubView()
+# w.show()
+
+# app.exec_()

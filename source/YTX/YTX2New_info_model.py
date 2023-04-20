@@ -4,7 +4,7 @@
 import maya.cmds as cmds
 from pprint import pprint
 
-import YTX2New_toolkit
+import source.YTX.YTX2New_toolkit as YTX2New_toolkit
 import importlib
 importlib.reload(YTX2New_toolkit)
 
