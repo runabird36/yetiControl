@@ -1,9 +1,10 @@
 
 
-
+from importlib import reload
 import maya.cmds as cmds
 import maya.mel as mel
 from source.YCPackages import neon, yt_py
+reload(neon)
 import re
 from traceback import print_exc
 
@@ -71,12 +72,15 @@ def create_yeti_group_cfx_ver(tar_assetname_GRP):
 
     print(11111111111, tar_assetname_GRP)
     ns_num = neon.get_aniNS_from_geo(tar_assetname_GRP)
+    print(ns_num)
     if ns_num == '':
         # group_num = get_next_number(asset_name, group_num)
         group_num = "0"
         _res = re_ex_num.search(tar_assetname_GRP)
         if _res:
-            group_num = _res.group()
+            group_num = str(int(_res.group()) + 1)
+        else:
+            group_num = "1"
 
         group_num = group_num.zfill(3)
     else:

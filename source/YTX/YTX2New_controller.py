@@ -497,9 +497,6 @@ class CFXloadYeti():
 
         print('project info data')
         _maya_view = _maya_main_window()
-        # prj_name = LUCY.get_project()
-        # if prj_name in HAIR_STEP_PROJECTS_LIST:
-        #     self.__PIPESTEP__ = "hair"
         
         self.mode_select_view = YTX2_assign_mode_dialog.YFBSelModeDialog(_maya_view)
 
