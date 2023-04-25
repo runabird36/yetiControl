@@ -354,12 +354,13 @@ def get_abcFullpath_from_alembicNode(connected_geo):
 def _get_assetnum_from_assetGRP(connected_geo):
     abc_file_path = get_abcFullpath_from_alembicNode(connected_geo)
     if len(abc_file_path.split('_')):
-        asset_name = connected_geo.split('_')[0]
-        attr_value = '{0}_{1}'.format(asset_name, "001")
-        if num_re_ex.search(attr_value):
-            return attr_value
-        else:
-            return ""
+        return ""
+        # asset_name = connected_geo.split('_')[0]
+        # attr_value = '{0}_{1}'.format(asset_name, "001")
+        # if num_re_ex.search(attr_value):
+        #     return attr_value
+        # else:
+        #     return ""
     file_name = os.path.basename(abc_file_path)
     file_name = file_name.split('.')[0]
     asset_num = file_name.split('_')[-1]

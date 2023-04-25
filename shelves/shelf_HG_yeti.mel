@@ -109,5 +109,110 @@ global proc shelf_HG_yeti () {
         -commandRepeatable 1
         -flat 1
     ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "import os, sys\nfrom importlib import reload\nyeti_root_path = os.path.realpath(os.environ[\"HGWEAVER_YETI_ROOT\"])\nyeti_root_path = yeti_root_path.replace(\"\\\\\", \"/\")\n\nif yeti_root_path not in sys.path:\n    sys.path.append(yeti_root_path)\n    \n\nimport source.YC_core_module as YC_core_module\nreload(YC_core_module)\n\nfrom source.YTX import YTX2New_controller\nreload(YTX2New_controller)\n\n\nytx_engine = YTX2New_controller.CFXloadYeti()\nytx_engine.run()\n\n\n" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "import os, sys\nfrom importlib import reload\nyeti_root_path = os...." 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -imageOverlayLabel "YTX2" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.6 
+        -image "pythonFamily.png" 
+        -image1 "pythonFamily.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "import os, sys\nfrom importlib import reload\nyeti_root_path = os.path.realpath(os.environ[\"HGWEAVER_YETI_ROOT\"])\nyeti_root_path = yeti_root_path.replace(\"\\\\\", \"/\")\n\nif yeti_root_path not in sys.path:\n    sys.path.append(yeti_root_path)\n    \n\nimport source.YC_core_module as YC_core_module\nreload(YC_core_module)\n\nfrom source.YTX import YTX2New_controller\nreload(YTX2New_controller)\n\n\nytx_engine = YTX2New_controller.CFXloadYeti()\nytx_engine.run()\n\n\n" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "import os, sys\nfrom importlib import reload\nyeti_root_path = os.path.realpath(os.environ[\"HGWEAVER_YETI_ROOT\"])\nyeti_root_path = yeti_root_path.replace(\"\\\\\", \"/\")\n\nprint(yeti_root_path)\nif yeti_root_path not in sys.path:\n    sys.path.append(yeti_root_path)\n    \n\nimport source.YC_core_module as YC_core_module\nreload(YC_core_module)\n\nfrom source.saveGuideRestpose import save_guide_utility_v02\nreload(save_guide_utility_v02)\n\n\nsave_guide_utility_v02._run()\n\n" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "import os, sys\nfrom importlib import reload\nyeti_root_path = os...." 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -imageOverlayLabel "sGuideRestpose" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.6 
+        -image "pythonFamily.png" 
+        -image1 "pythonFamily.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "import os, sys\nfrom importlib import reload\nyeti_root_path = os.path.realpath(os.environ[\"HGWEAVER_YETI_ROOT\"])\nyeti_root_path = yeti_root_path.replace(\"\\\\\", \"/\")\n\nprint(yeti_root_path)\nif yeti_root_path not in sys.path:\n    sys.path.append(yeti_root_path)\n    \n\nimport source.YC_core_module as YC_core_module\nreload(YC_core_module)\n\nfrom source.saveGuideRestpose import save_guide_utility_v02\nreload(save_guide_utility_v02)\n\n\nsave_guide_utility_v02._run()\n\n" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 1
+        -flexibleWidthValue 32
+        -enable 1
+        -width 34
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "import os, sys\nfrom importlib import reload\nyeti_root_path = os.path.realpath(os.environ[\"HGWEAVER_YETI_ROOT\"])\nyeti_root_path = yeti_root_path.replace(\"\\\\\", \"/\")\n\nprint(yeti_root_path)\nif yeti_root_path not in sys.path:\n    sys.path.append(yeti_root_path)\n    \n\nimport source.YC_core_module as YC_core_module\nreload(YC_core_module)\n\nfrom source.saveGroomRestpose import save_grooms_utility\nreload(save_grooms_utility)\n\n\nsave_grooms_utility._run()\n\n" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "import os, sys\nfrom importlib import reload\nyeti_root_path = os...." 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -imageOverlayLabel "sGroomRestpose" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.6 
+        -image "pythonFamily.png" 
+        -image1 "pythonFamily.png" 
+        -style "iconOnly" 
+        -marginWidth 0
+        -marginHeight 1
+        -command "import os, sys\nfrom importlib import reload\nyeti_root_path = os.path.realpath(os.environ[\"HGWEAVER_YETI_ROOT\"])\nyeti_root_path = yeti_root_path.replace(\"\\\\\", \"/\")\n\nprint(yeti_root_path)\nif yeti_root_path not in sys.path:\n    sys.path.append(yeti_root_path)\n    \n\nimport source.YC_core_module as YC_core_module\nreload(YC_core_module)\n\nfrom source.saveGroomRestpose import save_grooms_utility\nreload(save_grooms_utility)\n\n\nsave_grooms_utility._run()\n\n" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
 
 } 
