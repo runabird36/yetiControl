@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>YFB_info_widget</class>
+ <widget class="QWidget" name="YFB_info_widget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>593</width>
+    <height>409</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <layout class="QVBoxLayout" name="YFB_info_main_vl" stretch="2,3">
+     <item>
+      <layout class="QHBoxLayout" name="YFB_data_info_hl">
+       <item>
+        <widget class="QTabWidget" name="YFB_abc_info_tw">
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="YFB_abc_info_root">
+          <attribute name="title">
+           <string>Alembic Info(ANI)</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <layout class="QVBoxLayout" name="YFB_abc_info_root_vl">
+             <item>
+              <layout class="QHBoxLayout" name="YFB_abc_info_ns_hl" stretch="2,3">
+               <item>
+                <widget class="QLabel" name="YFB_abc_info_ns_title_lb">
+                 <property name="text">
+                  <string>Namespace</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="YFB_abc_info_ns_contents_le">
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="YFB_abc_info_bmesh_hl" stretch="2,3">
+               <item>
+                <widget class="QLabel" name="YFB_abc_info_bmesh_title_lb">
+                 <property name="text">
+                  <string>Basemesh</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="YFB_abc_info_bmesh_contents_le">
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTabWidget" name="YFB_yeti_info_tw">
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="YFB_yeti_info_root">
+          <attribute name="title">
+           <string>Yeti Info</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <item>
+            <layout class="QVBoxLayout" name="YFB_yeti_info_vl">
+             <item>
+              <widget class="QLabel" name="YFB_yeti_info_grms_title_lb">
+               <property name="text">
+                <string>Groom nodes (선택 가능)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QListView" name="YFB_yeti_info_grms_contents_lv"/>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QTabWidget" name="YFB_bake_info_tw">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="YFB_bake_info_root">
+        <attribute name="title">
+         <string>Bake Info</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_8">
+         <item>
+          <layout class="QVBoxLayout" name="YFB_bake_info_root_vl" stretch="2,3">
+           <item>
+            <layout class="QVBoxLayout" name="YFB_bake_info_dir_vl">
+             <item>
+              <widget class="QLabel" name="YFB_bake_info_dir_title_lb">
+               <property name="text">
+                <string>Bake directory path</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="YFB_bake_info_dir_contents_le">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

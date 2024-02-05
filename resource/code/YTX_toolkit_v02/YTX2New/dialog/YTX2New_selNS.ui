@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>YTX2New_selNS</class>
+ <widget class="QDialog" name="YTX2New_selNS">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>433</width>
+    <height>340</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>YTX2 - fur</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,2">
+   <item>
+    <layout class="QVBoxLayout" name="YTX2New_info_vl" stretch="3,1,1">
+     <item>
+      <widget class="QLabel" name="YTX2New_msg_lb">
+       <property name="text">
+        <string>... 네임스페이스가 없습니다.</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="YTX2New_btn_hl">
+       <item>
+        <widget class="QPushButton" name="YTX2New_ok_btn">
+         <property name="text">
+          <string>선택</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="YTX2New_cancel_btn">
+         <property name="text">
+          <string>취소</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QListWidget" name="YTX2New_assetGRP_ns_view_lw"/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

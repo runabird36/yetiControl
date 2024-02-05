@@ -1,0 +1,1 @@
+/usersetup/linux/python/py39/bin/python3.9 /usersetup/linux/scripts/general_sc/yetifurbakerybatch/source/view/YBB_bake_dialog.py

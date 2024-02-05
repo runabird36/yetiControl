@@ -1,0 +1,24 @@
+global proc string[] get_texnode_list(string $yeti_node_name)
+{
+    string $tex_node_list[]= `pgYetiGraph -listNodes -type "texture" $yeti_node_name`;
+
+    return $tex_node_list;
+
+}
+
+
+
+global proc string get_filename_from_texnode(string $yeti_node_name, string $tex_node)
+{
+    string $tex_path = `pgYetiGraph -node $tex_node -param "file_name" -getParamValue $yeti_node_name`;
+    return $tex_path;
+
+}
+
+
+global proc set_filename_in_texnode(string $yeti_node_name, string $tex_node, string $filename)
+{
+
+    pgYetiGraph -node $tex_node -param "file_name" -setParamValueString $filename $yeti_node_name;
+
+}
